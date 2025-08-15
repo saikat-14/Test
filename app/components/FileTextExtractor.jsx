@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { parseFile } from "../utils/fileParsing";
+import { parseFile } from "../components/fileParsing";
+
 
 export default function FileTextExtractor() {
   const [extractedText, setExtractedText] = useState("");
