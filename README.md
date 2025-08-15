@@ -1,4 +1,4 @@
-# DyslexiaText
+# DyslexiAid
 
 A Next.js web application that converts normal written text into dyslexia-friendly format, improving readability and accessibility for individuals with dyslexia.
 
