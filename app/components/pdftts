@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Extract Text from PDF or Website</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.3.136/pdf.min.js"></script>
+  <style>
+    body { font-family: sans-serif; max-width:800px; margin:3rem auto; }
+    textarea { width: 100%; height: 300px; }
+    .controls { margin: 1em 0; }
+  </style>
+</head>
+<body>
+  <h1>Extract Text From PDF / Website</h1>
+  <div class="controls">
+    <label>PDF file:
+      <input type="file" id="pdfInput" accept="application/pdf">
+    </label>
+    <button id="loadPdfBtn">Extract PDF Text</button>
+    <br><br>
+    <label>Website URL:
+      <input type="text" id="urlInput" placeholder="https://...">
+    </label>
+    <button id="fetchUrlBtn">Fetch Website Text</button>
+    <br><br>
+    <button id="ttsBtn">🔊 Play Text-to-Speech</button>
+  </div>
+  
+  <textarea id="outputText" readonly></textarea>
+  
+  <script>
+    // PDF.js setup
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.3.136/pdf.worker.min.js";
+
+    // PDF Extraction
+    document.getElementById("loadPdfBtn").onclick = async () => {
+      const input = document.getElementById('pdfInput');
+      if (!input.files.length) return alert('Select a PDF file.');
+      const file = input.files[0];
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        const typedarray = new Uint8Array(e.target.result);
+        const pdf = await pdfjsLib.getDocument({ data: typedarray }).promise;
+        let textContent = '';
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const txt = await page.getTextContent();
+          const pageText = txt.items.map(item => item.str).join(' ');
+          textContent += pageText + '\n\n';
+        }
+        document.getElementById('outputText').value = textContent;
+      };
+      reader.readAsArrayBuffer(file);
+    };
+
+    // Website Extraction
+    document.getElementById("fetchUrlBtn").onclick = async () => {
+      const url = document.getElementById('urlInput').value;
+      if (!url) return alert('Provide a URL.');
+      try {
+        const proxy = "https://api.allorigins.win/get?url=" + encodeURIComponent(url);
+        const response = await fetch(proxy); // Use proxy to avoid CORS
+        const result = await response.json();
+        const html = result.contents;
+        const doc = new DOMParser().parseFromString(html, "text/html");
+        // Simplified: extract visible text
+        function getVisibleText(element) {
+          let output = '';
+          for (const node of element.childNodes) {
+            if (node.nodeType === 3) { // Text node
+              output += node.nodeValue.trim() + ' ';
+            } else if (node.nodeType === 1 && !['SCRIPT','STYLE','NOSCRIPT','SVG'].includes(node.nodeName)) {
+              output += getVisibleText(node);
+            }
+          }
+          return output;
+        }
+        let bodyText = getVisibleText(doc.body).replace(/\s+/g, ' ').trim();
+        document.getElementById('outputText').value = bodyText;
+      } catch (err) {
+        alert("Failed to fetch/extract text: " + err);
+      }
+    };
+
+    // Text-to-Speech (TTS)
+    document.getElementById("ttsBtn").onclick = () => {
+      const text = document.getElementById('outputText').value;
+      if (!text) return;
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text.slice(0, 10000)); // limit for very long text
+      utterance.rate = 1;
+      window.speechSynthesis.speak(utterance);
+    };
+  </script>
+</body>
+</html>
