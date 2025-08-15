@@ -10,11 +10,11 @@ export default function Features() {
       title: "Optimized Spacing",
       description: "Increased letter spacing, word spacing, and line height to reduce visual crowding and improve readability."
     },
-    {
-      icon: "📁",
-      title: "File Upload Support",
-      description: "Upload TXT, DOC, DOCX, PDF, and RTF files to convert them to dyslexia-friendly format automatically."
-    },
+   {
+  icon: "📁",
+  title: "File Upload Support",
+  description: "Upload TXT, DOC, DOCX, PDF, and RTF files to convert them to dyslexia-friendly format automatically."
+},
     {
       icon: "🌐",
       title: "Webpage Conversion",
